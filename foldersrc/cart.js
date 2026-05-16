@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   Image,
   TouchableOpacity,
   Platform,
-  Modal
+  Modal,
+  TextInput
 } from 'react-native';
 import { Ionicons, Feather, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,7 +17,7 @@ import { useCart } from './cartcontext'; // Sử dụng context để lấy dữ
 
 export default function CartScreen() {
   // Lấy dữ liệu và các hàm xử lý từ kho lưu trữ chung (Context)
-  const { cartItems, updateQuantity, removeItem } = useCart();
+  const { cartItems, updateQuantity, removeItem, clearCart } = useCart();
   const [isCheckoutVisible, setCheckoutVisible] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState('standard');
   const [selectedPayment, setSelectedPayment] = useState('cod');
@@ -24,6 +25,36 @@ export default function CartScreen() {
   // Tính tổng tiền dựa trên danh sách trong giỏ
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const QuantityInput = ({ id, quantity }) => {
+    const [text, setText] = useState(String(quantity));
+
+    useEffect(() => {
+      setText(String(quantity));
+    }, [quantity]);
+
+    const handleChange = (value) => {
+      const digits = value.replace(/[^0-9]/g, '');
+      setText(digits);
+    };
+
+    const handleEndEditing = () => {
+      const parsed = parseInt(text, 10);
+      updateQuantity(id, parsed && parsed > 0 ? parsed : 1);
+    };
+
+    return (
+      <TextInput
+        style={styles.qtyInput}
+        value={text}
+        onChangeText={handleChange}
+        onEndEditing={handleEndEditing}
+        keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'numeric'}
+        returnKeyType="done"
+        blurOnSubmit={true}
+      />
+    );
   };
 
   const renderItem = ({ item }) => (
@@ -44,7 +75,7 @@ export default function CartScreen() {
               <AntDesign name="minus" size={16} color="#888" />
             </TouchableOpacity>
             
-            <Text style={styles.qtyText}>{item.quantity}</Text>
+            <QuantityInput id={item.id} quantity={item.quantity} />
             
             <TouchableOpacity style={styles.qtyBtn} onPress={() => updateQuantity(item.id, 'inc')}>
               <AntDesign name="plus" size={16} color="#704D5B" />
@@ -111,6 +142,7 @@ export default function CartScreen() {
         deliveryMethod: selectedDelivery === 'standard' ? 'Standard Delivery' : 'Express Delivery',
         paymentMethod: selectedPayment === 'cod' ? 'Cash on Delivery (COD)' : selectedPayment === 'mastercard' ? 'Mastercard' : 'PayPal',
         date: new Date().toLocaleDateString('vi-VN'),
+        status: 'active',
       };
 
       const existingOrders = await AsyncStorage.getItem('ORDERS');
@@ -238,8 +270,8 @@ export default function CartScreen() {
                 const saved = await saveOrder();
                 if (saved) {
                   setCheckoutVisible(false);
-                  alert("Đặt hàng thành công!");
-                  removeItem(null); // Clear cart after successful order
+                  alert('Đặt hàng thành công!');
+                  clearCart();
                 }
               }}
             >
@@ -266,7 +298,18 @@ const styles = StyleSheet.create({
   itemFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15 },
   quantityContainer: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#EEE', borderRadius: 20, paddingHorizontal: 5 },
   qtyBtn: { padding: 8 },
-  qtyText: { paddingHorizontal: 12, fontSize: 16, fontWeight: '500' },
+  qtyInput: {
+    minWidth: 50,
+    marginHorizontal: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+  },
   itemPrice: { fontSize: 18, fontWeight: 'bold' },
   checkoutButton: { position: 'absolute', bottom: 20, left: 20, right: 20, backgroundColor: '#5D3A4A', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 18, paddingHorizontal: 20, borderRadius: 15 },
   checkoutText: { color: '#FFF', fontSize: 16, fontWeight: '600' },

@@ -12,13 +12,9 @@ import {
 } from 'react-native';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useCart } from './cartcontext';
+import { PRODUCTS } from './products';
 
-const DATA = [
-  { id: '1', name: 'Áo len', price: 150000, image: require('../assets/ao_len.png') },
-  { id: '2', name: 'Áo len', price: 150000, image: require('../assets/ao_len_2.png') },
-  { id: '3', name: 'Áo hoodie', price: 200000, image: require('../assets/ao_hoodie.png') },
-  { id: '4', name: 'Túi xách tay', price: 300000, image: require('../assets/tui_xach_tay.png') },
-];
+const DATA = PRODUCTS;
 
 export default function SearchScreen() {
   const [searchText, setSearchText] = useState('');
@@ -28,6 +24,10 @@ export default function SearchScreen() {
     addToCart(item);
     Alert.alert("Thành công", `Đã thêm ${item.name} vào giỏ hàng!`);
   };
+
+  const filteredData = DATA.filter(item =>
+    item.name.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
@@ -68,7 +68,7 @@ export default function SearchScreen() {
       </View>
 
       <FlatList
-        data={DATA}
+        data={filteredData}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         numColumns={2}

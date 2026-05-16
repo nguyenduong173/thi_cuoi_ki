@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,23 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
-  Alert
+  Alert,
+  FlatList
 } from 'react-native';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
-import { useCart } from './cartcontext'; 
+import { useCart } from './cartcontext';
+import { PRODUCTS } from './products';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const { addToCart } = useCart();
+  const [searchText, setSearchText] = useState('');
+
+
+  const filteredProducts = PRODUCTS.filter(item =>
+    item.name.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const handleAddToCart = (item) => {
     addToCart(item);
@@ -39,53 +47,115 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.brandTitle}>FurnitureCo.</Text>
-        </View>
+      {searchText ? (
+        <FlatList
+          data={filteredProducts}
+          renderItem={({ item }) => <ProductCard item={item} />}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          contentContainerStyle={styles.listContainer}
+          columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <>
+              {/* Header */}
+              <View style={styles.header}>
+                <Text style={styles.brandTitle}>FurnitureCo.</Text>
+              </View>
 
-        {/* Search */}
-        <View style={styles.searchSection}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
-            <TextInput placeholder="Search Store" style={styles.searchInput} placeholderTextColor="#888" />
+              {/* Search */}
+              <View style={styles.searchSection}>
+                <View style={styles.searchBar}>
+                  <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
+                  <TextInput placeholder="Search Store" style={styles.searchInput} placeholderTextColor="#888" value={searchText} onChangeText={setSearchText} />
+                </View>
+              </View>
+
+              {/* Banner */}
+              <View style={styles.bannerContainer}>
+                <Image source={require('../assets/banner.png')} style={styles.bannerImage} />
+                <View style={styles.pagination}>
+                  <View style={[styles.dot, styles.activeDot]} />
+                  <View style={styles.dot} />
+                </View>
+              </View>
+            </>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Không tìm thấy sản phẩm.</Text>
+            </View>
+          }
+        />
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.brandTitle}>FurnitureCo.</Text>
           </View>
-        </View>
 
-        {/* Banner */}
-        <View style={styles.bannerContainer}>
-          <Image source={require('../assets/banner.png')} style={styles.bannerImage} />
-          <View style={styles.pagination}>
-            <View style={[styles.dot, styles.activeDot]} />
-            <View style={styles.dot} />
+          {/* Search */}
+          <View style={styles.searchSection}>
+            <View style={styles.searchBar}>
+              <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
+              <TextInput placeholder="Search Store" style={styles.searchInput} placeholderTextColor="#888" value={searchText} onChangeText={setSearchText} />
+            </View>
           </View>
-        </View>
 
-        {/* Exclusive Offer - 1 Dòng (2 sản phẩm) */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Exclusive Offer</Text>
-          <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
-        </View>
-        <View style={styles.productGrid}>
-          <ProductCard item={{ id: '1', name: 'Áo len', price: 150000, image: require('../assets/ao_len.png') }} />
-          <ProductCard item={{ id: '2', name: 'Áo len xanh', price: 150000, image: require('../assets/ao_len_2.png') }} />
-        </View>
+          {/* Banner */}
+          <View style={styles.bannerContainer}>
+            <Image source={require('../assets/banner.png')} style={styles.bannerImage} />
+            <View style={styles.pagination}>
+              <View style={[styles.dot, styles.activeDot]} />
+              <View style={styles.dot} />
+            </View>
+          </View>
 
-        {/* Best Selling - 2 Dòng (4 sản phẩm) */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Best Selling</Text>
-          <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
-        </View>
-        <View style={styles.productGrid}>
-          <ProductCard item={{ id: '3', name: 'Áo hoodie', price: 200000, image: require('../assets/ao_hoodie.png') }} />
-          <ProductCard item={{ id: '4', name: 'Túi xách tay', price: 300000, image: require('../assets/tui_xach_tay.png') }} />
-          <ProductCard item={{ id: '5', name: 'Ví da', price: 80000, image: require('../assets/vi_da.png') }} />
-          <ProductCard item={{ id: '6', name: 'Kính râm', price: 50000, image: require('../assets/kinh_ram.png') }} />
-        </View>
+          {/* Exclusive Offer - 1 Dòng (2 sản phẩm) */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Exclusive Offer</Text>
+            <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
+          </View>
+          <View style={styles.productGrid}>
+            <ProductCard item={{ id: '1', name: 'Áo len', price: 150000, image: require('../assets/ao_len.png') }} />
+            <ProductCard item={{ id: '2', name: 'Áo len xanh', price: 150000, image: require('../assets/ao_len_2.png') }} />
+          </View>
 
-      </ScrollView>
+          {/* Best Selling - 2 Dòng (4 sản phẩm) */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Best Selling</Text>
+            <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
+          </View>
+          <View style={styles.productGrid}>
+            <ProductCard item={{ id: '3', name: 'Áo hoodie', price: 200000, image: require('../assets/ao_hoodie.png') }} />
+            <ProductCard item={{ id: '4', name: 'Túi xách tay', price: 300000, image: require('../assets/tui_xach_tay.png') }} />
+            <ProductCard item={{ id: '5', name: 'Ví da', price: 80000, image: require('../assets/vi_da.png') }} />
+            <ProductCard item={{ id: '6', name: 'Kính râm', price: 50000, image: require('../assets/kinh_ram.png') }} />
+          </View>
+
+          {/* New Arrivals - 2 Dòng (4 sản phẩm) */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>New Arrivals</Text>
+            <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
+          </View>
+          <View style={styles.productGrid}>
+            <ProductCard item={{ id: '7', name: 'Áo sơ mi trắng', price: 180000, image: require('../assets/ao_so_mi_trang.png') }} />
+            <ProductCard item={{ id: '8', name: 'Áo sơ mi đen', price: 180000, image: require('../assets/ao_so_mi_den.png') }} />
+            <ProductCard item={{ id: '9', name: 'Áo polo', price: 160000, image: require('../assets/ao_polo.png') }} />
+            <ProductCard item={{ id: '10', name: 'Quần jeans', price: 220000, image: require('../assets/quan_jeans.png') }} />
+          </View>
+
+          {/* Accessories - 1 Dòng (2 sản phẩm) */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Accessories</Text>
+            <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
+          </View>
+          <View style={styles.productGrid}>
+            <ProductCard item={{ id: '11', name: 'Giày Converse', price: 250000, image: require('../assets/giay.png') }} />
+            <ProductCard item={{ id: '12', name: 'Kính thời trang', price: 120000, image: require('../assets/kinh.png') }} />
+          </View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -114,4 +184,8 @@ const styles = StyleSheet.create({
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   productPrice: { fontSize: 14, fontWeight: '600', color: '#181725' },
   addButton: { backgroundColor: '#704D5B', width: 32, height: 32, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  emptyContainer: { alignItems: 'center', paddingTop: 40 },
+  emptyText: { fontSize: 16, color: '#888' },
+  listContainer: { paddingHorizontal: 20, paddingBottom: 20 },
+  row: { justifyContent: 'space-between' },
 });

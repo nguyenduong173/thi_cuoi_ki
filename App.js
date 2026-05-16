@@ -8,7 +8,6 @@ import OnboardingScreen from './foldersrc/onboard';
 import LoginScreen from './foldersrc/login';
 import SignUpScreen from './foldersrc/signup';
 import OrderAcceptedScreen from './foldersrc/ordercomplete';
-import OrderFailedScreen from './foldersrc/orderfail';
 
 // Import file Bottom Tab vừa tạo
 import BottomTab from './foldersrc/bottomtab';
@@ -30,9 +29,7 @@ export default function App() {
 
           {/* Gộp 4 màn hình chính vào đây */}
           <Stack.Screen name="MainTabs" component={BottomTab} />
-
           <Stack.Screen name="OrderAccepted" component={OrderAcceptedScreen} />
-          <Stack.Screen name="OrderFailed" component={OrderFailedScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </CartProvider>

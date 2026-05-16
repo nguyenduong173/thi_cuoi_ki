@@ -20,14 +20,23 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // Hàm tăng giảm số lượng
-  const updateQuantity = (id, type) => {
+  // Hàm tăng giảm hoặc thiết lập số lượng trực tiếp
+  const updateQuantity = (id, value) => {
     setCartItems(prevItems => prevItems.map(item => {
-      if (item.id === id) {
-        let newQty = type === 'inc' ? item.quantity + 1 : item.quantity - 1;
-        return { ...item, quantity: newQty > 0 ? newQty : 1 };
+      if (item.id !== id) return item;
+
+      let newQty = item.quantity;
+      if (value === 'inc') {
+        newQty = item.quantity + 1;
+      } else if (value === 'dec') {
+        newQty = item.quantity - 1;
+      } else {
+        const parsed = typeof value === 'string' ? parseInt(value, 10) : value;
+        newQty = Number.isInteger(parsed) ? parsed : item.quantity;
       }
-      return item;
+
+      if (newQty < 1) newQty = 1;
+      return { ...item, quantity: newQty };
     }));
   };
 
@@ -36,8 +45,11 @@ export const CartProvider = ({ children }) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== id));
   };
 
+  // Xóa toàn bộ giỏ hàng
+  const clearCart = () => setCartItems([]);
+
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeItem }}>
+    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeItem, clearCart }}>
       {children}
     </CartContext.Provider>
   );
